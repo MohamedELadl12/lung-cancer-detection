@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -73,7 +74,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function respondWithToken($token)
+    public function respondWithToken($token)
     {
         return response()->json([
             'access_token' => $token,
@@ -86,8 +87,17 @@ class AuthController extends Controller
     public function authGoogleCallback(){
         
         $x = Socialite::driver('google')->stateless()->user();
+        $user = User::createUserSocialate($x->user);
+        if($user instanceof User){
+            $token = auth('api')->login($user);
+            return $this->respondWithToken($token);
+        }else{
+            return response()->json([
+                'message' => 'Error creating user',
+            ], 500);
+        }
 
-        dd($x);
+        
     }
 
     public function authGoogle(){

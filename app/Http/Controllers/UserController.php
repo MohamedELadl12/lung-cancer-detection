@@ -37,7 +37,15 @@ class UserController extends Controller
         // Create a new user
         $x = User::createUser($request->all());
        if( $x instanceof User){
-        $x->sendEmailVerificationNotification();
+        try{
+            $x->sendEmailVerificationNotification();
+        }catch(\Exception $e){
+            $x->deleteUser();
+            return response()->json([
+                'message' => 'Error creating user',
+            ], 500);
+        }
+        
         return response()->json([
             'message' => 'User created successfully',
             'user' => $x
@@ -74,7 +82,7 @@ class UserController extends Controller
         $user = User::find(auth('api')->id());
         $user->updateUser($request->all());
         if( $user instanceof User){
-
+            
             return response()->json([
                 'message' => 'User updated successfully',
                 'user' => $user

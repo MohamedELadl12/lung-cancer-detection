@@ -11,7 +11,7 @@ use App\Http\Controllers\UserController;
 
 
 Route::controller(AuthController::class)->group(function () {
-    Route::post('/register','store');
+    
     Route::post('/login','login')->name('login');
     Route::post('/logout','logout');
     Route::get('/auth/google/callback','authGoogleCallback');
@@ -20,7 +20,7 @@ Route::controller(AuthController::class)->group(function () {
 
 
 Route::controller(UserController::class)->group(function () {
-    
+    Route::post('/register','store');
     Route::middleware(['auth:api','verifiedEmail'])->group(function () {
         Route::get('/user','show');
         Route::put('/user','update');

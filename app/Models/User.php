@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\AuthController;
 use App\Mail\VerficationMail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -106,10 +107,22 @@ class User extends Authenticatable implements JWTSubject
     public static function createUserSocialate(array $data){
 
         try {
+            $googleUser = User::where('email', $data['email'])->first();
+            if($googleUser && $googleUser->google_id != null){
+                $token = auth('api')->login($googleUser);
+                $authController = new AuthController();
+                $authController->respondWithToken($token);
+                
+            }elseif($googleUser && $googleUser->google_id == null){
+                return response()->json([
+                    'message' => 'User already exists',
+                ], 200);
+            }
             $user = new User();
             $user->name = $data['name'];
             $user->email = $data['email'];
             $user->google_id = $data['google_id'] ?? null;
+            $user->email_verified_at = now();
             if( !$user->save() ) throw new \Exception('Error creating user');
            
             return $user;

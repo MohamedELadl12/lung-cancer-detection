@@ -30,7 +30,7 @@ class ImageScan implements ShouldQueue
             'image' => $this->image
         ];
 
-        $response = Http::timeout(400)->attach('file', $this->image, 'image.jpg')->post(env('FAST_API_ROOT_FOR_APP').'/predict/scan');
+        $response = Http::timeout(400)->attach('file', file_get_contents($this->image->getRealPath()), 'image.jpg')->post(env('FAST_API_ROOT_FOR_APP').'/predict/scan');
         if($response->successful()){
             $data = [
                 'report_id'=>$this->report_id,

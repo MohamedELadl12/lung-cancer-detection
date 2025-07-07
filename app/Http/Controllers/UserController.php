@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserUpdateRequest;
+use App\Jobs\ReportJob;
+use App\Models\report;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -37,14 +39,14 @@ class UserController extends Controller
         // Create a new user
         $x = User::createUser($request->all());
        if( $x instanceof User){
-        try{
-            $x->sendEmailVerificationNotification();
-        }catch(\Exception $e){
-            $x->deleteUser();
-            return response()->json([
-                'message' => 'Error creating user',
-            ], 500);
-        }
+        // try{
+        //     $x->sendEmailVerificationNotification();
+        // }catch(\Exception $e){
+        //     $x->deleteUser();
+        //     return response()->json([
+        //         'message' => 'Error creating user',
+        //     ], 500);
+        // }
         
         return response()->json([
             'message' => 'User created successfully',
@@ -71,6 +73,61 @@ class UserController extends Controller
     public function edit(string $id)
     {
         //
+    }
+
+
+    public function analyisCondition(Request $request){
+        $user = User::find(auth('api')->id());
+        $data = $request->except('lung_image');
+        $data['user_id'] = $user->id;
+        $report = report::storeReport($data);
+        if($report instanceof report){
+            ReportJob::dispatch($report, $request->file('lung_image'));
+            return response()->json([
+                'message' => 'Report created successfully wait for results',
+                'report' => $report
+            ], 200);
+        }
+
+
+        return response()->json([
+            'message' => 'Error in creating report',
+
+        ],500);
+
+       
+    }
+
+
+    public function tests(){
+        $user = User::find(auth('api')->id());
+        if($user){
+            return response()->json([
+                'message' => "You have " . count($user->reports) . " tests",
+                'tests'=> $user->reports
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'User not found',
+        ], 500);
+        
+    }
+
+
+    public function showTest($test_id){
+        $user = User::find(auth('api')->id());
+        $report = $user->reports->where('id', $test_id)->first();
+        if($report){
+            return response()->json([
+                'message' => 'Report found',
+                'report' => $report,
+                'lung_image'=> $report->scan
+            ], 200);
+        }
+        return response()->json([
+            'message' => 'Report not found',
+        ], 500);
     }
 
     /**

@@ -21,18 +21,22 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::controller(UserController::class)->group(function () {
     Route::post('/register','store');
-    Route::middleware(['auth:api','verifiedEmail'])->group(function () {
+    Route::middleware(['auth:api'])->group(function () {
         Route::get('/user','show');
         Route::put('/user','update');
         Route::delete('/user','destroy');
+        Route::post('/analyisCondition','analyisCondition');
+        Route::get('/tests','tests');
+        Route::get('/tests/{test_id}','showTest');
     });
     Route::post('/verfiyEmail','verifyEmail')->middleware('auth:api');
     Route::get('newOtp'.'newOtp')->middleware('auth:api');
+
 });
 
 
 Route::controller(TipController::class)->group(function () {
-    Route::middleware(['auth:api','verifiedEmail'])->group(function () {
+    Route::middleware(['auth:api'])->group(function () {
         Route::get('/tips','GetAll');
         Route::get('/tip/{id}','GetTip');
         Route::post('/tip','createTip');

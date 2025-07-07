@@ -33,6 +33,11 @@ class User extends Authenticatable implements JWTSubject
         'facebook_id',
     ];
 
+
+    protected $with=[
+        'reports',
+    ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -56,6 +61,10 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+
+    public function reports(){
+        return $this->hasMany(report::class, 'user_id', 'id');
+    }
 
 
      // Rest omitted for brevity
